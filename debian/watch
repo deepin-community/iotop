@@ -1,0 +1,3 @@
+version=3
+opts=pgpsigurlmangle=s/$/.asc/ \
+http://guichaz.free.fr/iotop/ (?:.+/)iotop-([\d.]+).tar.gz
