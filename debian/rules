@@ -4,3 +4,8 @@ export PYBUILD_INSTALL_ARGS=--install-scripts=/usr/sbin
 
 %:
 	dh $@ --with python3 --buildsystem=pybuild
+
+override_dh_install:
+	dh_install
+	mv debian/iotop/usr/sbin/iotop debian/iotop/usr/sbin/iotop-py
+	mv debian/iotop/usr/share/man/man8/iotop.8 debian/iotop/usr/share/man/man8/iotop-py.8

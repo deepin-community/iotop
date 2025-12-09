@@ -60,7 +60,7 @@ if not ioaccounting or not vm_event_counters:
     if not ioaccounting:
         print('  - I/O accounting support ' \
           '(CONFIG_TASKSTATS, CONFIG_TASK_DELAY_ACCT, ' \
-          'CONFIG_TASK_IO_ACCOUNTING)')
+          'CONFIG_TASK_IO_ACCOUNTING, kernel.task_delayacct sysctl)')
     if not vm_event_counters:
         print('  - VM event counters (CONFIG_VM_EVENT_COUNTERS)')
     sys.exit(1)
@@ -207,8 +207,14 @@ def find_uids(options):
 def parse_proc_pid_status(pid):
     result_dict = {}
     try:
-        for line in open('/proc/%d/status' % pid):
-            key, value = line.split(':', 1)
+        for line in open('/proc/%d/status' % pid, errors='replace'):
+            try:
+                key, value = line.split(':', 1)
+            except ValueError:
+                # Ignore lines that are not formatted correctly as
+                # some downstream kernels may have weird lines and
+                # the needed fields are probably formatted correctly.
+                continue
             result_dict[key] = value.strip()
     except IOError:
         pass  # No such process
@@ -471,3 +477,11 @@ class ProcessList(DumpableObject):
 
     def clear(self):
         self.processes = {}
+
+
+def sysctl_task_delayacct():
+    try:
+        with open('/proc/sys/kernel/task_delayacct') as f:
+            return bool(int(f.read().strip()))
+    except FileNotFoundError:
+        return None

@@ -5,8 +5,9 @@ Maintainer: Paul Wise <pabs@debian.org>
 Build-Depends:
  debhelper (>= 11~),
  dh-python,
- python3,
- python3-distutils,
+ python3-all:any,
+ python3-setuptools,
+ libpython3-all-dev,
 Standards-Version: 4.1.4
 Homepage: http://guichaz.free.fr/iotop/
 

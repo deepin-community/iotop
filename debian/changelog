@@ -1,3 +1,47 @@
+iotop (0.6-42-ga14256a-0.3) unstable; urgency=medium
+
+  * Non-maintainer upload.
+  * Add build dependency on python3-distutils. (Closes: #1080876)
+
+ -- Alexandre Detiste <tchet@debian.org>  Thu, 30 Jan 2025 00:55:39 +0100
+
+iotop (0.6-42-ga14256a-0.2) unstable; urgency=medium
+
+  * Non-maintainer upload.
+  * Drop build dependency on python3-distutils.
+
+ -- Matthias Klose <doko@debian.org>  Fri, 22 Mar 2024 16:29:15 +0100
+
+iotop (0.6-42-ga14256a-0.1) unstable; urgency=medium
+
+  * Non-maintainer upload.
+
+  [ Christian Ehrhardt ]
+  * New upstream release
+    [still from git as there was no new tag since 9 years]
+    - Among other fixes this new release includes various changes that
+      fix some long waiting bugs:
+      + 443737e Workaround crashes due to non-UTF-8 characters in
+        process command-lines (Closes: #737043)
+      + 0392b20 Ignore invalid lines in /proc/*/status files (Closes: #926207)
+      + ab35334 Detect the kernel.task_delayacct sysctl value
+        (Closes: #1004714)(LP: #1982727)
+
+  [ Helmut Grohne ]
+  * Fix Build-Depends for cross. (Closes: #913375)
+    - Annotate python3 with :any.
+    - Replace python3:any with python3-all:any as pybuild insists.
+    - Add libpython3-all-dev as pybuild needs that as well.
+
+ -- Christian Ehrhardt <christian.ehrhardt@canonical.com>  Thu, 04 Aug 2022 09:39:29 +0200
+
+iotop (0.6-24-g733f3f8-1.1) unstable; urgency=medium
+
+  * Non-maintainer upload.
+  * Install iotop as iotop-py and provide iotop via alternatives
+
+ -- Boian Bonev <bbonev@ipacct.com>  Sun, 28 Jun 2020 16:48:40 +0300
+
 iotop (0.6-24-g733f3f8-1) unstable; urgency=medium
 
   * New upstream snapshot

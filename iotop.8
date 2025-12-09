@@ -1,4 +1,4 @@
-.TH IOTOP "8" "April 2009"
+.TH IOTOP "8" "October 1, 2021"
 .SH NAME
 iotop \- simple top\-like I/O monitor
 .SH SYNOPSIS
@@ -9,7 +9,8 @@ iotop watches I/O usage information output by the Linux kernel (requires
 2.6.20 or later) and displays a table of current I/O usage by processes
 or threads on the system. At least the CONFIG_TASK_DELAY_ACCT,
 CONFIG_TASK_IO_ACCOUNTING, CONFIG_TASKSTATS and CONFIG_VM_EVENT_COUNTERS
-options need to be enabled in your Linux kernel build configuration.
+options need to be enabled in your Linux kernel build configuration and
+since Linux kernel 5.14, the kernel.task_delayacct sysctl enabled.
 .PP
 iotop displays columns for the I/O bandwidth read and written by each
 process/thread during the sampling period. It also displays the percentage
@@ -26,7 +27,7 @@ Thus \fBTotal\fR and \fBCurrent\fR values may not be equal at any given moment o
 due to data caching and I/O operations reordering that take place inside Linux kernel.
 .PP
 Use the left and right arrows to change the sorting, r to reverse the
-sorting order, o to toggle the \-\-only option, p to toggle the \-\-processes option, a to toggle the \-\-accumulated option, q to quit or i to change the priority of a thread or a process' thread(s). Any other key will force a refresh.
+sorting order, o to toggle the \-\-only option, p to toggle the \-\-processes option, a to toggle the \-\-accumulated option, q to quit or i to change the priority of a thread or a process's thread(s). Any other key will force a refresh.
 .SH OPTIONS
 .TP
 \fB\-\-version\fR
