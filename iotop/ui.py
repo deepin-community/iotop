@@ -43,7 +43,7 @@ except (ImportError, RuntimeError):
 
 from collections import OrderedDict
 
-from iotop.data import find_uids, TaskStatsNetlink, ProcessList, Stats
+from iotop.data import find_uids, TaskStatsNetlink, ProcessList, Stats, sysctl_task_delayacct
 from iotop.data import ThreadInfo
 from iotop.version import VERSION
 from iotop import ioprio
@@ -224,6 +224,12 @@ class IOTopUI(object):
         new_sorting_key += delta
         new_sorting_key = max(0, new_sorting_key)
         new_sorting_key = min(len(IOTopUI.sorting_keys) - 1, new_sorting_key)
+        if not self.has_swapin_io:
+            if new_sorting_key in (5, 6):
+                if delta <= 0:
+                    new_sorting_key = 4
+                elif delta > 0:
+                    new_sorting_key = 7
         return new_sorting_key
 
     # I wonder if switching to urwid for the display would be better here
@@ -421,14 +427,22 @@ class IOTopUI(object):
         def format(p):
             stats = format_stats(self.options, p, self.process_list.duration)
             io_delay, swapin_delay, read_bytes, write_bytes = stats
-            if Stats.has_blkio_delay_total:
-                delay_stats = '%7s %7s ' % (swapin_delay, io_delay)
-            else:
-                delay_stats = ' ?unavailable?  '
-            pid_format = '%%%dd' % MAX_PID_WIDTH
-            line = (pid_format + ' %4s %-8s %11s %11s %s') % (
-                p.pid, p.get_ioprio(), p.get_user()[:8], read_bytes,
-                write_bytes, delay_stats)
+            format = '%%%dd' % MAX_PID_WIDTH
+            params = p.pid,
+            format += ' %4s'
+            params += p.get_ioprio(),
+            format += ' %-8s'
+            params += p.get_user()[:8],
+            format += ' %11s %11s'
+            params += read_bytes, write_bytes
+            if self.has_swapin_io:
+                format += ' %7s %7s'
+                params += swapin_delay, io_delay
+            elif self.options.batch:
+                format += ' %s '
+                params += '?unavailable?',
+            format += ' '
+            line = format % (params)
             cmdline = p.get_cmdline()
             if not self.options.batch:
                 remaining_length = self.width - len(line)
@@ -473,6 +487,15 @@ class IOTopUI(object):
             pid += 'TID'
         titles = [pid, '  PRIO', '  USER', '     DISK READ', '  DISK WRITE',
                   '  SWAPIN', '      IO', '    COMMAND']
+        self.has_swapin_io = Stats.has_blkio_delay_total
+        if self.has_swapin_io:
+            # Linux kernels without the sysctl return None and
+            # iotop just uses the heuristic for those versions.
+            # Linux kernels with the sysctl return True or False
+            # and iotop then uses the sysctl value instead.
+            if sysctl_task_delayacct() == False:
+                self.has_swapin_io = False
+        self.adjust_sorting_key(0)
         lines = self.get_data()
         if self.options.time:
             titles = ['    TIME'] + titles
@@ -491,10 +514,12 @@ class IOTopUI(object):
         else:
             self.win.erase()
 
-            if Stats.has_blkio_delay_total:
+            if self.has_swapin_io:
                 status_msg = None
             else:
-                status_msg = ('CONFIG_TASK_DELAY_ACCT not enabled in kernel, '
+                status_msg = ('CONFIG_TASK_DELAY_ACCT '
+                              'and kernel.task_delayacct sysctl '
+                              'not enabled in kernel, '
                               'cannot determine SWAPIN and IO %')
 
             help_lines = []
@@ -561,6 +586,8 @@ class IOTopUI(object):
             pos = 0
             remaining_cols = self.width
             for i in range(len(titles)):
+                if not self.has_swapin_io and i in (5, 6):
+                    continue
                 attr = curses.A_REVERSE
                 title = titles[i]
                 if i == self.sorting_key:
@@ -618,6 +645,9 @@ def run_iotop(options):
             return run_iotop_window(None, options)
         else:
             return curses.wrapper(run_iotop_window, options)
+    except curses.error as e:
+        print('iotop interface error:', e, file=sys.stderr)
+        sys.exit(1)
     except OSError as e:
         if e.errno == errno.EPERM:
             print(e, file=sys.stderr)
@@ -630,6 +660,15 @@ configure sudo to allow you to run iotop as root.
 
 Please do not file bugs on iotop about this.''', file=sys.stderr)
             sys.exit(1)
+        if e.errno == errno.ENOENT:
+            print(e, file=sys.stderr)
+            print('''
+The Linux kernel interfaces that iotop relies on for process I/O statistics
+were not found. Please enable CONFIG_TASKSTATS in your Linux kernel build
+configuration, use iotop outside a container and or share the host's
+network namespace with the container.
+
+Please do not file bugs on iotop about this.''', file=sys.stderr)
         else:
             raise
 

@@ -1,0 +1,39 @@
+Iotop is a Python program with a top like UI used to show of behalf of which
+process is the I/O going on. It requires Python >= 2.7 and a Linux kernel >=
+2.6.20 with the CONFIG_TASK_DELAY_ACCT CONFIG_TASKSTATS,
+CONFIG_TASK_IO_ACCOUNTING and CONFIG_VM_EVENT_COUNTERS build options on
+and for Linux kernels since 5.14, the kernel.task_delayacct sysctl enabled.
+
+
+To run a local version of iotop:
+
+$ ./iotop.py
+
+
+The documentation is available in the man page:
+
+$ man ./iotop.8
+
+
+To install iotop, you should use a package provided by your distribution. If you
+really want to install this version of iotop on your system, do (as root):
+
+# ./setup.py install
+
+
+For an alternative implementation of iotop that is written in C, uses
+less resources and has more features, please take a look at this project:
+
+https://github.com/Tomas-M/iotop
+
+Packages of both implementations are available in several distributions:
+
+https://repology.org/project/iotop-python/versions
+https://repology.org/project/iotop-c/versions
+
+To chat with the iotop community join #iotop on the libera.chat IRC network.
+Please mention which implementation is in use when asking questions there.
+
+-- 
+Guillaume Chazarain <guichaz@gmail.com>
+http://guichaz.free.fr/iotop/
